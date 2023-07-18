@@ -12,10 +12,10 @@ BoardGameBlog is a full-stack blogging platform dedicated to board games. It all
 - User profiles: Users can view their profiles, including author information and a list of published articles.
 - Images: Users can now add images to their articles
 - Likes: Users can support an article by adding their likes to it
+- Login with Google
   
 ## Nice to Have
 
-- Login with Google
 - Notifications system: Users receive notifications when their articles are commented on or when they are mentioned in a comment.
 
 ## Technologies Used
