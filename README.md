@@ -10,11 +10,12 @@ BoardGameBlog is a full-stack blogging platform dedicated to board games. It all
 - Search and filters: Users can search for articles by title, author, or category and apply filters to refine the results.
 - Comments and social interaction: Users can comment on articles and interact with each other through comments.
 - User profiles: Users can view their profiles, including author information and a list of published articles.
+- Images: Users can now add images to their articles
+- Likes: Users can support an article by adding their likes to it
   
 ## Nice to Have
 
-- Images: Users can now add images to their articles
-- Likes: Users can support an article by adding their likes to it
+- Login with Google
 - Notifications system: Users receive notifications when their articles are commented on or when they are mentioned in a comment.
 
 ## Technologies Used
@@ -22,6 +23,3 @@ BoardGameBlog is a full-stack blogging platform dedicated to board games. It all
 - Frontend: [React](https://reactjs.org/), [Redux](https://redux.js.org/), [Bootstrap](https://getbootstrap.com/), HTML5, CSS3
 - Backend: [Spring Boot](https://spring.io/projects/spring-boot) (Java)
 - Database: [PostgreSQL](https://www.postgresql.org/)
-
-## Frontend Repository
-- You can find my frontend repository at: https://github.com/AndreaBar94/CapstoneProject-FE

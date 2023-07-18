@@ -23,7 +23,7 @@ public class ExceptionsHandler {
 		List<String> errors = ex.getBindingResult().getFieldErrors().stream().map(error -> error.getDefaultMessage())
 				.collect(Collectors.toList());
 
-		ErrorsPayloadWithErrorsList payload = new ErrorsPayloadWithErrorsList("Ci sono stati errori nel body",
+		ErrorsPayloadWithErrorsList payload = new ErrorsPayloadWithErrorsList(errors.get(0),
 				new Date(), 400, errors);
 
 		return new ResponseEntity<ErrorsPayloadWithErrorsList>(payload, HttpStatus.BAD_REQUEST);
@@ -72,7 +72,7 @@ public class ExceptionsHandler {
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorsPayload> handleGeneric(Exception e) {
 
-		ErrorsPayload payload = new ErrorsPayload("Errore generico", new Date(), 500);
+		ErrorsPayload payload = new ErrorsPayload("General error", new Date(), 500);
 
 		return new ResponseEntity<ErrorsPayload>(payload, HttpStatus.INTERNAL_SERVER_ERROR);
 	}

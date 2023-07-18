@@ -8,7 +8,5 @@ public class GoogleAccessTokenResponse {
     private String expires_in;
     private String token_type;
     private String refresh_token;
-    // Altri campi opzionali
-    
-    // Getter e setter
+
 }

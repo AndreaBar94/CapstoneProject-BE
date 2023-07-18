@@ -46,7 +46,9 @@ public class LikeService {
 	public void deleteLike(UUID articleId, UUID userId) {
 	    Like like = likeRepo.findByArticleArticleIdAndUserUserId(articleId, userId);
 			 if (like != null) {
-		    likeRepo.delete(like);
+				 like.getArticle().getLikes().remove(like);
+
+				 likeRepo.delete(like);
 		}
 	   
 	}

@@ -5,14 +5,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import AndreaBarocchi.CapstoneProject.enums.UserRole;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -40,6 +42,8 @@ public class User implements UserDetails{
 	private String lastname;
 	private String email;
 	private String password;
+	@Column(columnDefinition = "text")
+	private String profileImgUrl;
 	
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
@@ -52,11 +56,12 @@ public class User implements UserDetails{
     @JsonIgnoreProperties({"user", "comments"})
     private List<Article> articles = new ArrayList<>();
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JsonIgnoreProperties({"user"})
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<Comment> comments;
 
-	public User(String username, String firstname, String lastname, String email, String password, List<Article> articles) {
+	public User(String username, String firstname, String lastname, String email, String password, List<Article> articles, String profileImgUrl) {
 		super();
 		this.username = username;
 		this.firstname = firstname;
@@ -65,6 +70,7 @@ public class User implements UserDetails{
 		this.password = password;
 		this.role = UserRole.USER;
 		this.articles = articles;
+		this.profileImgUrl = profileImgUrl;
 	}
 	
 	public void addArticle(Article article) {
@@ -75,6 +81,10 @@ public class User implements UserDetails{
     public void removeArticle(Article article) {
         this.articles.remove(article);
         article.setUser(null);
+
+        article.getComments().clear();
+
+        article.getLikes().clear();
     }
     
 	@Override

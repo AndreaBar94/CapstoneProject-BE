@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,15 +23,21 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import AndreaBarocchi.CapstoneProject.entities.Article;
 import AndreaBarocchi.CapstoneProject.entities.Category;
+import AndreaBarocchi.CapstoneProject.entities.Comment;
+import AndreaBarocchi.CapstoneProject.entities.Like;
 import AndreaBarocchi.CapstoneProject.entities.User;
+import AndreaBarocchi.CapstoneProject.enums.UserRole;
 import AndreaBarocchi.CapstoneProject.exceptions.UnauthorizedException;
 import AndreaBarocchi.CapstoneProject.payloads.ArticlePayload;
 import AndreaBarocchi.CapstoneProject.payloads.UserRegistrationPayload;
 import AndreaBarocchi.CapstoneProject.repositories.ArticleRepository;
 import AndreaBarocchi.CapstoneProject.repositories.CategoryRepository;
+import AndreaBarocchi.CapstoneProject.repositories.CommentRepository;
+import AndreaBarocchi.CapstoneProject.repositories.LikeRepository;
 import AndreaBarocchi.CapstoneProject.repositories.UserRepository;
 import AndreaBarocchi.CapstoneProject.services.ArticleService;
 import AndreaBarocchi.CapstoneProject.services.UserService;
@@ -43,6 +50,10 @@ class CapstoneProjectApplicationTests {
 
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private CommentRepository commentRepository;
+    @Mock
+    private LikeRepository likeRepository;
 
     @Mock
     private CategoryRepository categoryRepository;
@@ -156,7 +167,19 @@ class CapstoneProjectApplicationTests {
         });
     }
 
-
+    @Test
+    public void testGetDefaultUser() {
+    	
+    	User defaultUser = new User();
+    	defaultUser.setEmail("defaultUser@email.it");
+    	when(userRepository.getUserByEmail("defaultUser@email.it"))
+        .thenReturn(defaultUser);
+		
+		// Chiama il metodo getDefaultUser() e verifica il risultato
+		User result = userService.getDefaultUser();
+		assertEquals(defaultUser, result);
+    }
+    
     @Test
     public void testDeleteUser() throws org.springframework.data.crossstore.ChangeSetPersister.NotFoundException {
         UUID userId = UUID.randomUUID();
@@ -164,15 +187,45 @@ class CapstoneProjectApplicationTests {
         User foundUser = new User();
         foundUser.setUserId(userId);
         foundUser.setEmail("testuser@example.com");
+        
+        User defaultUser = new User();
+    	defaultUser.setEmail("defaultUser@email.it");
+    	when(userRepository.getUserByEmail("defaultUser@email.it"))
+        .thenReturn(defaultUser);
+        
+        Comment comment = new Comment();
+        comment.setCommentId(UUID.randomUUID());
+        comment.setContent("Test comment");
+        comment.setUser(foundUser);
+
+        Like like = new Like();
+        like.setLikeId(UUID.randomUUID());
+        like.setUser(foundUser);
+
+        List<Comment> comments = new ArrayList<>();
+        comments.add(comment);
+
+        List<Like> likes = new ArrayList<>();
+        likes.add(like);
+
+        foundUser.setComments(comments);
+        foundUser.setLikes(likes);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(foundUser));
-        when(authentication.getName()).thenReturn("testuser@example.com");
+        when(commentRepository.findByUserUserId(userId)).thenReturn(Collections.singletonList(comment));
+        when(likeRepository.findByUserUserId(userId)).thenReturn(Collections.singletonList(like));
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(foundUser);
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         userService.deleteUser(userId, authentication);
 
         verify(userRepository).delete(foundUser);
     }
-    
+
+
 
     @Test
     public void testDeleteUserUnauthorized() {
@@ -182,13 +235,17 @@ class CapstoneProjectApplicationTests {
         foundUser.setUserId(userId);
         foundUser.setEmail("testuser@example.com");
 
+        User unauthorizedUser = new User();
+        unauthorizedUser.setEmail("otheruser@example.com");
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(foundUser));
-        when(authentication.getName()).thenReturn("otheruser@example.com");
+        when(authentication.getPrincipal()).thenReturn(unauthorizedUser);
 
         assertThrows(UnauthorizedException.class, () -> {
             userService.deleteUser(userId, authentication);
         });
     }
+
 
     
     @Test
@@ -332,6 +389,7 @@ class CapstoneProjectApplicationTests {
         user1.setUserId(UUID.randomUUID());
 
         User user2 = new User();
+        user2.setRole(UserRole.USER);
         user2.setUserId(UUID.randomUUID());
 
         Article existingArticle = new Article();
@@ -351,10 +409,8 @@ class CapstoneProjectApplicationTests {
     
     @Test
     public void testDeleteArticle() {
-        // Chiamare il metodo deleteArticle
         UUID articleId = UUID.randomUUID();
 
-        // Configurare il comportamento del repository mock
         when(articleRepository.findById(articleId)).thenReturn(Optional.empty());
 
         User authenticatedUser = new User();
@@ -363,7 +419,6 @@ class CapstoneProjectApplicationTests {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(authenticatedUser);
 
-        // Verificare che il metodo delete del repository non venga chiamato
         assertThrows(NotFoundException.class, () -> {
             articleService.deleteArticle(articleId, authentication);
         });
@@ -392,6 +447,7 @@ class CapstoneProjectApplicationTests {
         user1.setUserId(UUID.randomUUID());
 
         User user2 = new User();
+        user2.setRole(UserRole.USER);
         user2.setUserId(UUID.randomUUID());
 
         Article existingArticle = new Article();

@@ -53,7 +53,13 @@ public class CommentController {
         Comment updatedComment = commentService.updateComment(id, commentPayload, authentication);
         return ResponseEntity.ok(updatedComment);
     }
-
+	
+	@PutMapping("blame/{id}")
+	public ResponseEntity<Comment> censorComment(@PathVariable UUID id, Authentication authentication) throws NotFoundException {
+		Comment updatedComment = commentService.censorComment(id, authentication);
+        return ResponseEntity.ok(updatedComment);
+	}
+	
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteComment(@PathVariable UUID id, Authentication authentication)
             throws NotFoundException {

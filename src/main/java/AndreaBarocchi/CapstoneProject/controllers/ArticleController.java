@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import AndreaBarocchi.CapstoneProject.entities.Article;
 import AndreaBarocchi.CapstoneProject.entities.User;
+import AndreaBarocchi.CapstoneProject.exceptions.NotFoundException;
 import AndreaBarocchi.CapstoneProject.payloads.ArticlePayload;
 import AndreaBarocchi.CapstoneProject.services.ArticleService;
 
@@ -27,7 +27,7 @@ public class ArticleController {
     @GetMapping
     public ResponseEntity<Page<Article>> getArticles(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "100") int size,
+            @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "publicationDate") String sortBy) {
         Page<Article> articles = articleService.findAllArticles(page, size, sortBy);
         return ResponseEntity.ok(articles);
@@ -40,6 +40,7 @@ public class ArticleController {
         Article newArticle = articleService.createArticle(user, articlePayload);
         return ResponseEntity.status(HttpStatus.CREATED).body(newArticle);
     }
+
     
     @GetMapping("/search/{filter}/{keyword}")
     public ResponseEntity<List<Article>> searchArticles(@PathVariable String filter, @PathVariable String keyword) {

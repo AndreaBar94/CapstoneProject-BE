@@ -39,18 +39,16 @@ public class SecurityConfig {
 		http
         .authorizeHttpRequests(auth -> {
             auth.requestMatchers("/").permitAll();
-            auth.requestMatchers("/secured").authenticated();
+            auth.requestMatchers("/google/**").permitAll();
+            auth.requestMatchers("/google/callback").permitAll();
+			auth.requestMatchers(HttpMethod.POST, "/google/callback/**").permitAll();
         })
         .oauth2Login(withDefaults())
         .formLogin(withDefaults());
-
-		
 		
 		http.authorizeHttpRequests(auth -> {
-			auth.requestMatchers("/auth/**", "/login/**")
-			.permitAll();
+			auth.requestMatchers("/auth/**", "/login/**").permitAll();
 			});
-		
 		
 		//auth user
 		http.authorizeHttpRequests(auth -> {
@@ -75,6 +73,7 @@ public class SecurityConfig {
 		http.authorizeHttpRequests(auth -> {
 			auth.requestMatchers(HttpMethod.GET, "/comments").hasAnyAuthority("USER", "ADMIN");
 			auth.requestMatchers(HttpMethod.PUT, "/comments/**").hasAnyAuthority("USER", "ADMIN");
+			auth.requestMatchers(HttpMethod.PUT, "/comments/blame/**").hasAnyAuthority("ADMIN");
 			auth.requestMatchers(HttpMethod.DELETE, "/comments/**").hasAnyAuthority("USER", "ADMIN");
 			auth.requestMatchers("/comments/**").hasAnyAuthority("USER", "ADMIN");
 		});
@@ -82,6 +81,9 @@ public class SecurityConfig {
 		//auth category
 		http.authorizeHttpRequests(auth -> {
 			auth.requestMatchers(HttpMethod.GET, "/categories").hasAnyAuthority("USER", "ADMIN");
+			auth.requestMatchers(HttpMethod.POST, "/categories").hasAnyAuthority("ADMIN");
+			auth.requestMatchers(HttpMethod.PUT, "/categories/**").hasAnyAuthority("ADMIN");
+			auth.requestMatchers(HttpMethod.DELETE, "/categories/**").hasAnyAuthority("ADMIN");
 			auth.requestMatchers(HttpMethod.GET, "/categories/name/**").hasAnyAuthority("USER", "ADMIN");
 			auth.requestMatchers(HttpMethod.GET, "/categories/**").hasAnyAuthority("USER", "ADMIN");
 			auth.requestMatchers("/categories/**").hasAuthority("ADMIN");
@@ -95,7 +97,7 @@ public class SecurityConfig {
 		
 		http.addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class);
 
-		http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+		http.addFilterBefore(jwtAuthFilter, CorsFilter.class);
 
 		http.addFilterBefore(exceptionHandlerFilter, JWTAuthFilter.class);
 

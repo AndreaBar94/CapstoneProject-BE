@@ -2,16 +2,22 @@ package AndreaBarocchi.CapstoneProject.google;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import AndreaBarocchi.CapstoneProject.auth.JWTTools;
 import AndreaBarocchi.CapstoneProject.entities.User;
+import AndreaBarocchi.CapstoneProject.payloads.AuthenticationSuccessfullPayload;
 import AndreaBarocchi.CapstoneProject.payloads.UserRegistrationPayload;
 import AndreaBarocchi.CapstoneProject.services.UserService;
 
 @RestController
+@RequestMapping("/google")
 public class GoogleAuthController {
 	
 	@Autowired
@@ -20,11 +26,8 @@ public class GoogleAuthController {
 	@Autowired
 	private UserService userService;
 	
-	
-	//mandatory callback, it has to includes param "code", still not working
-	@PostMapping("/google/callback")
-	public String googleCallback(@RequestParam("code") String authorizationCode) throws NotFoundException {
-		
+	@GetMapping("/callback")
+	public ResponseEntity<AuthenticationSuccessfullPayload> googleCallback(@RequestParam("code") String authorizationCode) throws NotFoundException {
 		// using auth code from Google to get the access token
 		GoogleAccessTokenResponse accessTokenResponse = googleAuthService.getAccessToken(authorizationCode);
 		String accessToken = accessTokenResponse.getAccess_token();
@@ -32,38 +35,44 @@ public class GoogleAuthController {
 		// using access token to get user info
 		GoogleUserInfoResponse userInfoResponse = googleAuthService.getUserInfo(accessToken);
 		String email = userInfoResponse.getEmail();
-		String name = userInfoResponse.getName();
+		String username = userInfoResponse.getName();
+		String firstname = userInfoResponse.getGiven_name();
+		String lastname = userInfoResponse.getFamily_name();
+		String profileImgUrl = userInfoResponse.getPicture();
+		
+		User user = null;
 		
 		// verify if user already in database
-		User user = userService.findUserByEmail(email);
+		try {
+			user = userService.findUserByEmail(email);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+		
 		
 		if (user == null) {
 			// if not create new user
 			UserRegistrationPayload newUser = new UserRegistrationPayload();
 			newUser.setEmail(email);
-			newUser.setFirstname(name);
+			newUser.setUsername(username);
+			newUser.setFirstname(firstname);
+			newUser.setLastname(lastname);
+			newUser.setProfileImgUrl(profileImgUrl);
 			
 			userService.createUser(newUser);
 		}
-
-
-		// here to do redirect to appropriate page
-		return "Callback completed successfully";
+		
+		String token = JWTTools.createToken(user);
+		
+		return new ResponseEntity<>(new AuthenticationSuccessfullPayload(token), HttpStatus.OK);
 	}
 	
 	//this will return authorization google url
-	@GetMapping("/google/authorization-url")
-    public String getGoogleAuthorizationUrl() {
-       return googleAuthService.getAuthorizationUrl();
+	@GetMapping("/authorization-url")
+    public ResponseEntity<String> getGoogleAuthorizationUrl() {
+       return new ResponseEntity<>( googleAuthService.getAuthorizationUrl(), HttpStatus.OK);
         
     }
-	
-	//same as the method up here, this one will show the url in postman (cool)
-//	@GetMapping("/google/authorization-url")
-//	public ResponseEntity<String> getGoogleAuthorizationUrl() {
-//		String authURL = googleAuthService.getAuthorizationUrl();
-//		return ResponseEntity.ok(authURL);
-//	}
     
 }
 

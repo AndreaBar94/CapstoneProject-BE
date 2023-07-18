@@ -1,0 +1,689 @@
+{
+	"info": {
+		"_postman_id": "5e265faa-fc4a-447a-991b-0007db66dd99",
+		"name": "BoardGameBlog - CapstoneProject",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26368994",
+		"_collection_link": "https://www.postman.com/winter-shuttle-657274/workspace/capstoneproject/collection/26368994-5e265faa-fc4a-447a-991b-0007db66dd99?action=share&creator=26368994&source=collection_link"
+	},
+	"item": [
+		{
+			"name": "SignUp / Login",
+			"item": [
+				{
+					"name": "SignUp",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{baseToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"boh\",\n    \"firstname\": \"Mario\",\n    \"lastname\": \"Rossi\",\n    \"email\": \"mario.rossi@email.it\",\n    \"password\": \"1234abcd!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}auth/signup",
+							"host": [
+								"{{baseURL}}auth"
+							],
+							"path": [
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{baseToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"pippo@gmail.com\",\n    \"password\": \"1234abcd\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}auth/login",
+							"host": [
+								"{{baseURL}}auth"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LoginWithGoogle",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:3142/google/authorization-url",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3142",
+							"path": [
+								"google",
+								"authorization-url"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "GetUsers",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}users",
+							"host": [
+								"{{baseURL}}users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateUser",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"Sergente Barold\",\n    \"firstname\": \"Andrea\",\n    \"lastname\": \"Barocchi\",\n    \"email\": \"andrea.barocchi@email.it\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}users/{INSERT USER ID HERE}",
+							"host": [
+								"{{baseURL}}users"
+							],
+							"path": [
+								"{INSERT USER ID HERE}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteUser",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}users/{INSERT USER ID HERE}",
+							"host": [
+								"{{baseURL}}users"
+							],
+							"path": [
+								"{INSERT USER ID HERE}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Articles",
+			"item": [
+				{
+					"name": "PostArticle",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Lorem Ipsum 3\",\n    \"content\": \"At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}articles",
+							"host": [
+								"{{baseURL}}articles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetArticleById",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}articles/{INSERT ARTICLE ID HERE}",
+							"host": [
+								"{{baseURL}}articles"
+							],
+							"path": [
+								"{INSERT ARTICLE ID HERE}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}articles/search/{INSERT FILTER HERE}/{INSERT KEYWORD HERE}",
+							"host": [
+								"{{baseURL}}articles"
+							],
+							"path": [
+								"search",
+								"{INSERT FILTER HERE}",
+								"{INSERT KEYWORD HERE}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteArticle",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}articles/{INSERT ARTICLE ID HERE}",
+							"host": [
+								"{{baseURL}}articles"
+							],
+							"path": [
+								"{INSERT ARTICLE ID HERE}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Comments",
+			"item": [
+				{
+					"name": "GetCommentsById",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}comments/{INSERT COMMENT ID HERE}",
+							"host": [
+								"{{baseURL}}comments"
+							],
+							"path": [
+								"{INSERT COMMENT ID HERE}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetCommentsByArticle",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}comments/article/{INSERT ARTICLE ID HERE}",
+							"host": [
+								"{{baseURL}}comments"
+							],
+							"path": [
+								"article",
+								"{INSERT ARTICLE ID HERE}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PostCommentOnArticle",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}comments/article/{INSERT ARTICLE ID HERE}",
+							"host": [
+								"{{baseURL}}comments"
+							],
+							"path": [
+								"article",
+								"{INSERT ARTICLE ID HERE}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteComment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}comments/{INSERT COMMENT ID HERE}",
+							"host": [
+								"{{baseURL}}comments"
+							],
+							"path": [
+								"{INSERT COMMENT ID HERE}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateComment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}comments/{INSERT COMMENT ID HERE}",
+							"host": [
+								"{{baseURL}}comments"
+							],
+							"path": [
+								"{INSERT COMMENT ID HERE}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Categories",
+			"item": [
+				{
+					"name": "GetCategoriesByName",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}categories/name/{INSERT CATEGORY NAME HERE}",
+							"host": [
+								"{{baseURL}}categories"
+							],
+							"path": [
+								"name",
+								"{INSERT CATEGORY NAME HERE}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateNewCategory(ADMIN ONLY)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"categoryName\": \"new category name\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}categories",
+							"host": [
+								"{{baseURL}}categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteCategory",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}categories/{INSERT CATEGORY ID HERE}",
+							"host": [
+								"{{baseURL}}categories"
+							],
+							"path": [
+								"{INSERT CATEGORY ID HERE}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateCategory",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}categories/{INSERT CATEGORY ID HERE}",
+							"host": [
+								"{{baseURL}}categories"
+							],
+							"path": [
+								"{INSERT CATEGORY ID HERE}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Likes",
+			"item": [
+				{
+					"name": "AddLike",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}likes/{INSERT ARTICLE ID HERE}/{INSERT USER ID HERE}",
+							"host": [
+								"{{baseURL}}likes"
+							],
+							"path": [
+								"{INSERT ARTICLE ID HERE}",
+								"{INSERT USER ID HERE}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteLike",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{loginToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}likes/{INSERT ARTICLE ID HERE}/{INSERT USER ID HERE}",
+							"host": [
+								"{{baseURL}}likes"
+							],
+							"path": [
+								"{INSERT ARTICLE ID HERE}",
+								"{INSERT USER ID HERE}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

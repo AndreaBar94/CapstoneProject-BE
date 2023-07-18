@@ -15,21 +15,23 @@ import org.springframework.stereotype.Service;
 
 import AndreaBarocchi.CapstoneProject.entities.Article;
 import AndreaBarocchi.CapstoneProject.entities.Category;
+import AndreaBarocchi.CapstoneProject.entities.Comment;
+import AndreaBarocchi.CapstoneProject.entities.Like;
 import AndreaBarocchi.CapstoneProject.entities.User;
+import AndreaBarocchi.CapstoneProject.enums.UserRole;
 import AndreaBarocchi.CapstoneProject.exceptions.NotFoundException;
 import AndreaBarocchi.CapstoneProject.exceptions.UnauthorizedException;
 import AndreaBarocchi.CapstoneProject.payloads.ArticlePayload;
 import AndreaBarocchi.CapstoneProject.repositories.ArticleRepository;
 import AndreaBarocchi.CapstoneProject.repositories.CategoryRepository;
-import AndreaBarocchi.CapstoneProject.repositories.UserRepository;
+import AndreaBarocchi.CapstoneProject.utils.CustomPageable;
+import jakarta.transaction.Transactional;
 
 @Service
 public class ArticleService {
 
     @Autowired
     private ArticleRepository articleRepo;
-    @Autowired 
-    private UserRepository userRepo;
     @Autowired
     private CategoryRepository categoryRepo;
     
@@ -40,8 +42,15 @@ public class ArticleService {
             throw new NotFoundException("Category not found");
         }
         
-        Article article = new Article(payload.getTitle(), payload.getContent(), LocalDate.now(), user,
-                new ArrayList<>(), new ArrayList<>(), category);
+        Article article = new Article(
+        		payload.getTitle(),
+        		payload.getContent(),
+        		LocalDate.now(),
+        		user,
+                new ArrayList<>(),
+                new ArrayList<>(),
+                category,
+                payload.getImageUrl());
 
         Article savedArticle = articleRepo.save(article);
 
@@ -56,8 +65,18 @@ public class ArticleService {
             size = 10;
         if (size > 100)
             size = 20;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        return articleRepo.findAll(pageable);
+
+        Pageable pageable;
+        if (sortBy.equals("likes")) {
+            pageable = PageRequest.of(page, size);
+            return articleRepo.findAllArticlesOrderByLikes(pageable);
+        } else if (sortBy.equals("publicationDate")) {
+            pageable = PageRequest.of(page, size);
+            return articleRepo.findAllArticlesOrderByPublicationDate(pageable);
+        }else {
+            pageable = PageRequest.of(page, size, Sort.by(sortBy));
+            return articleRepo.findAll(pageable);
+        }
     }
 
     public Article findArticleById(UUID id) throws NotFoundException {
@@ -82,24 +101,41 @@ public class ArticleService {
         Article existingArticle = findArticleById(articleId);
         User authenticatedUser = (User) authentication.getPrincipal();
 
-        if (!existingArticle.getUser().getUserId().equals(authenticatedUser.getUserId())) {
+        if (!existingArticle.getUser().getUserId().equals(authenticatedUser.getUserId()) && !authenticatedUser.getRole().equals(UserRole.ADMIN)) {
             throw new UnauthorizedException("Unauthorized to update this article");
         }
 
         existingArticle.setTitle(articlePayload.getTitle());
         existingArticle.setContent(articlePayload.getContent());
-        existingArticle.setPublicationDate(articlePayload.getPublicationDate());
+        existingArticle.setImageUrl(articlePayload.getImageUrl());
+        existingArticle.setPublicationDate(existingArticle.getPublicationDate());
         return articleRepo.save(existingArticle);
     }
-
+    
+    @Transactional
     public void deleteArticle(UUID articleId, Authentication authentication) throws NotFoundException {
         Article existingArticle = findArticleById(articleId);
         User authenticatedUser = (User) authentication.getPrincipal();
 
-        if (!existingArticle.getUser().getUserId().equals(authenticatedUser.getUserId())) {
+        if (!existingArticle.getUser().getUserId().equals(authenticatedUser.getUserId()) && !authenticatedUser.getRole().equals(UserRole.ADMIN)) {
             throw new UnauthorizedException("Unauthorized to delete this article");
         }
+        // Remove pairing with comments
+        for (Comment comment : existingArticle.getComments()) {
+            comment.setArticle(null);
+        }
+        existingArticle.getComments().clear();
 
+        // Remove pairing with likes
+        for (Like like : existingArticle.getLikes()) {
+            like.setArticle(null);
+        }
+        existingArticle.getLikes().clear();
+        
+        //Remove pairing with user
+        existingArticle.getUser().getArticles().remove(existingArticle);
+       
         articleRepo.delete(existingArticle);
+
     }
 }

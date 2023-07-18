@@ -22,19 +22,19 @@ import AndreaBarocchi.CapstoneProject.exceptions.EmailAlreadyExistsException;
 import AndreaBarocchi.CapstoneProject.exceptions.UnauthorizedException;
 import AndreaBarocchi.CapstoneProject.payloads.ArticlePayload;
 import AndreaBarocchi.CapstoneProject.payloads.UserRegistrationPayload;
+import AndreaBarocchi.CapstoneProject.repositories.ArticleRepository;
 import AndreaBarocchi.CapstoneProject.repositories.CommentRepository;
-import AndreaBarocchi.CapstoneProject.repositories.LikeRepository;
 import AndreaBarocchi.CapstoneProject.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 
 @Service
 public class UserService {
 
     @Autowired
     private UserRepository userRepo;
+
     @Autowired
-    private CommentRepository commentRepo;
-    @Autowired
-    private LikeRepository likeRepo;
+    private ArticleRepository articleRepo;
     
     public Page<User> findAllUsers(int page, int size, String sortBy) {
         if (size < 0)
@@ -51,7 +51,7 @@ public class UserService {
         });
         List<Article> articles = convertToArticles(uPld.getArticles());
         User newUser = new User(uPld.getUsername(), uPld.getFirstname(), uPld.getLastname(), uPld.getEmail(),
-                uPld.getPassword(), articles);
+                uPld.getPassword(), articles, uPld.getProfileImgUrl());
         return userRepo.save(newUser);
     }
 
@@ -59,7 +59,7 @@ public class UserService {
         List<Article> articles = new ArrayList<>();
         if (articlePayloads != null) {
             for (ArticlePayload payload : articlePayloads) {
-                Article article = new Article(payload.getTitle(), payload.getContent(), payload.getPublicationDate(), null, null, null, null);
+                Article article = new Article(payload.getTitle(), payload.getContent(), payload.getPublicationDate(), null, null, null, null, null);
                 articles.add(article);
             }
         }
@@ -82,9 +82,17 @@ public class UserService {
         foundUser.setFirstname(uPld.getFirstname());
         foundUser.setLastname(uPld.getLastname());
         foundUser.setEmail(uPld.getEmail());
+        foundUser.setProfileImgUrl(uPld.getProfileImgUrl());
         return userRepo.save(foundUser);
     }
+    
+    public User getDefaultUser() {
+        User defaultUser = userRepo.getUserByEmail("defaultUser@email.it");
+        return defaultUser;
+    }
 
+    
+    @Transactional
     public void deleteUser(UUID userId, Authentication authentication) throws NotFoundException {
     	
         User foundUser = findUserById(userId);
@@ -93,12 +101,32 @@ public class UserService {
         if (!foundUser.getEmail().equals(authenticatedUser.getEmail())) {
             throw new UnauthorizedException("Unauthorized to delete this user");
         }
-        // Recupera tutti i commenti dell'utente
-        List<Comment> comments = commentRepo.findByUserUserId(userId);
-        List<Like> likes = likeRepo.findByUserUserId(userId);
-        // Elimina i commenti
-        commentRepo.deleteAll(comments);
-        likeRepo.deleteAll(likes);
+        
+        User defaultUser = getDefaultUser();
+        
+        //remove pairing with comments
+        for (Comment comment : foundUser.getComments()) {
+        	comment.setUser(defaultUser);
+        	
+        }
+        defaultUser.setComments(foundUser.getComments());
+        
+        foundUser.getComments().clear();
+        
+        //remove pairing with likes
+        for (Like like : foundUser.getLikes()) {
+            like.setUser(null);
+        }
+        foundUser.getLikes().clear();
+        
+        //set defaultUser as owner of foundUser's articles (don't wanna lost all my nice articles)
+        for (Article article : foundUser.getArticles()) {
+        	article.setUser(defaultUser);
+        	defaultUser.addArticle(article);
+        	articleRepo.save(article);
+        }
+        foundUser.getArticles().clear();
+        
         userRepo.delete(foundUser);
     }
 
@@ -110,7 +138,6 @@ public class UserService {
             throw new NotFoundException();
         }
     }
-
 
     public void deleteAllUsers() {
         userRepo.deleteAll();

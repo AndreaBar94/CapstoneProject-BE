@@ -15,4 +15,5 @@ import AndreaBarocchi.CapstoneProject.entities.Comment;
 public interface CommentRepository extends JpaRepository<Comment, UUID>{
 	 List<Comment> findByUserUserId(UUID userId);
 	 Page<Comment> findAllByArticleArticleId(UUID articleId, Pageable pageable);
+	 List<Comment> findByArticleArticleId(UUID articleId);
 }

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import AndreaBarocchi.CapstoneProject.entities.Article;
 import AndreaBarocchi.CapstoneProject.entities.Comment;
 import AndreaBarocchi.CapstoneProject.entities.User;
+import AndreaBarocchi.CapstoneProject.enums.UserRole;
 import AndreaBarocchi.CapstoneProject.exceptions.NotFoundException;
 import AndreaBarocchi.CapstoneProject.exceptions.UnauthorizedException;
 import AndreaBarocchi.CapstoneProject.payloads.CommentPayload;
@@ -70,7 +71,7 @@ public class CommentService {
         User authenticatedUser = (User) authentication.getPrincipal();
         
         // Verifica se l'utente autenticato è l'autore del commento
-        if (!existingComment.getUser().getEmail().equals(((User) authentication.getPrincipal()).getEmail())) {
+        if (!existingComment.getUser().getEmail().equals(((User) authentication.getPrincipal()).getEmail())&& !authenticatedUser.getRole().equals(UserRole.ADMIN)) {
         	//passo le info dello user non autorizzato al messaggio di errore
             throw new UnauthorizedException(authenticatedUser.getFirstname() + " is not authorized to update this comment");
         }
@@ -85,10 +86,30 @@ public class CommentService {
         User authenticatedUser = (User) authentication.getPrincipal();
         
         // Verifica se l'utente autenticato è l'autore del commento
-        if (!comment.getUser().getEmail().equals(((User) authentication.getPrincipal()).getEmail())) {
+        if (!comment.getUser().getEmail().equals(((User) authentication.getPrincipal()).getEmail())&& !authenticatedUser.getRole().equals(UserRole.ADMIN)) {
             throw new UnauthorizedException(authenticatedUser.getFirstname() + " is not authorized to delete this comment");
         }
+        comment.getArticle().getComments().remove(comment);
 
         commentRepo.delete(comment);
     }
+
+
+	public Comment censorComment(UUID commentId, Authentication authentication) throws NotFoundException {
+		
+		Comment comment = findCommentById(commentId); 
+        User authenticatedUser = (User) authentication.getPrincipal();
+        
+        if (!comment.getUser().getEmail().equals(((User) authentication.getPrincipal()).getEmail())&& !authenticatedUser.getRole().equals(UserRole.ADMIN)) {
+            throw new UnauthorizedException(authenticatedUser.getFirstname() + " is not authorized to blame this comment");
+        }
+        
+        if(comment.isCensored()) {
+        	comment.setCensored(false);
+        }else {
+        	comment.setCensored(true);
+        }
+        
+       return commentRepo.save(comment);
+	}
 }
